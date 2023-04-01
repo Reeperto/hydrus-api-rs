@@ -160,6 +160,17 @@ impl Endpoint for GetFile {
     }
 }
 
+pub struct GetThumbnail;
+
+impl Endpoint for GetThumbnail {
+    type Request = ();
+    type Response = ();
+
+    fn path() -> String {
+        String::from("get_files/thumbnail")
+    }
+}
+
 #[derive(Clone, Debug, Serialize)]
 #[serde(untagged)]
 pub enum SearchQueryEntry {
@@ -196,6 +207,12 @@ pub struct FileBasicMetadata {
     pub has_audio: Option<bool>,
     pub num_frames: Option<u64>,
     pub num_words: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct FileTagMetadata {
+    pub name: String,
+    pub display_tags: HashMap<String, Vec<String>>
 }
 
 #[derive(Clone, Debug, Default, Deserialize)]

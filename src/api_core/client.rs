@@ -41,6 +41,8 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
+use super::endpoints::searching_and_fetching_files::GetThumbnail;
+
 const ACCESS_KEY_HEADER: &str = "Hydrus-Client-API-Access-Key";
 const CONTENT_TYPE_HEADER: &str = "Content-Type";
 const ACCEPT_HEADER: &str = "Accept";
@@ -277,6 +279,30 @@ impl Client {
             }
             FileIdentifier::Hash(hash) => {
                 self.get::<GetFile, [(&str, String)]>(&[("hash", hash)])
+                    .await?
+            }
+        };
+        let mime_type = response
+            .headers()
+            .get("mime-type")
+            .cloned()
+            .map(|h| h.to_str().unwrap().to_string())
+            .unwrap_or("image/jpeg".into());
+
+        let bytes = response.bytes().await?.to_vec();
+
+        Ok(FileRecord { bytes, mime_type })
+    }
+
+    #[tracing::instrument(skip(self), level = "debug")]
+    pub async fn get_thumbnail(&self, id: FileIdentifier) -> Result<FileRecord> {
+        let response = match id {
+            FileIdentifier::ID(id) => {
+                self.get::<GetThumbnail, [(&str, u64)]>(&[("file_id", id)])
+                    .await?
+            }
+            FileIdentifier::Hash(hash) => {
+                self.get::<GetThumbnail, [(&str, String)]>(&[("hash", hash)])
                     .await?
             }
         };

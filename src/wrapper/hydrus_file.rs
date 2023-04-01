@@ -389,6 +389,11 @@ impl HydrusFile {
         self.client.get_file(self.id.clone()).await
     }
 
+    /// Retrieves the file record's thumbnail
+    pub async fn retrieve_thumbnail(&self) -> Result<FileRecord> {
+        self.client.get_thumbnail(self.id.clone()).await
+    }
+
     /// Returns the metadata for the given file
     /// if there's already known metadata about the file it uses that
     async fn metadata(&mut self) -> Result<&FileFullMetadata> {
