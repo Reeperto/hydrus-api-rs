@@ -191,12 +191,15 @@ impl HydrusFile {
     /// Returns the modified time of the file
     pub async fn time_modified(&mut self) -> Result<Option<NaiveDateTime>> {
         let metadata = self.metadata().await?;
-        let naive_time_modified = metadata
-            .basic_metadata
-            .time_modified
-            .map(|m| Utc.timestamp_millis(m as i64).naive_utc());
+        let naive_time_modified = metadata.basic_metadata.time_modified;
 
-        Ok(naive_time_modified)
+        if let Some(time) = naive_time_modified {
+            if let Some(local) = Utc.timestamp_millis_opt(time as i64).earliest() {
+                return Ok(Some(local.naive_utc()));
+            }
+        }
+
+        Ok(None)
     }
 
     /// Returns the imported time of the file for a given file service key
@@ -217,7 +220,7 @@ impl HydrusFile {
                     .get(service_key.as_ref())
                     .map(|s| s.time_imported)
             })
-            .map(|millis| Utc.timestamp_millis(millis as i64).naive_utc());
+            .map(|millis| Utc.timestamp_millis_opt(millis as i64).unwrap().naive_utc());
 
         Ok(naive_time_imported)
     }
@@ -233,7 +236,7 @@ impl HydrusFile {
             .deleted
             .get(service_key.as_ref())
             .map(|service| service.time_deleted)
-            .map(|millis| Utc.timestamp_millis(millis as i64).naive_utc());
+            .map(|millis| Utc.timestamp_millis_opt(millis as i64).unwrap().naive_utc());
 
         Ok(naive_time_deleted)
     }
