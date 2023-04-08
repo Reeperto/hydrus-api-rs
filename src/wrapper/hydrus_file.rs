@@ -294,13 +294,13 @@ impl HydrusFile {
         let mut tag_mappings = HashMap::new();
 
         #[allow(deprecated)]
-        for (service, status_tags) in &metadata.service_names_to_statuses_to_tags {
+        for (_, service) in metadata.tags.iter() {
             let mut tag_list = Vec::new();
 
-            for (_, tags) in status_tags {
+            for (_, tags) in &service.display_tags {
                 tag_list.append(&mut tags.into_iter().map(|t| t.into()).collect())
             }
-            tag_mappings.insert(ServiceName(service.clone()), tag_list);
+            tag_mappings.insert(ServiceName(service.name.clone()), tag_list);
         }
 
         Ok(tag_mappings)
@@ -311,13 +311,13 @@ impl HydrusFile {
         let metadata = self.metadata().await?;
         let mut tag_mappings = HashMap::new();
 
-        for (service, status_tags) in &metadata.service_keys_to_statuses_to_tags {
+        for (_, service) in metadata.tags.iter() {
             let mut tag_list = Vec::new();
 
-            for (_, tags) in status_tags {
+            for (_, tags) in &service.display_tags {
                 tag_list.append(&mut tags.into_iter().map(|t| t.into()).collect())
             }
-            tag_mappings.insert(ServiceIdentifier::Key(service.clone()), tag_list);
+            tag_mappings.insert(ServiceIdentifier::Key(service.name.clone()), tag_list);
         }
 
         Ok(tag_mappings)
